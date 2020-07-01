@@ -56,7 +56,7 @@ const clientList = [];
 _.post('/subscribe', async ctx => {
     const  sub   = JSON.parse(ctx.request.body);
     try {
-        console.log(sub);
+        //console.log(sub);
         clientList.push(sub);
     } catch (e){
         console.log(e);
