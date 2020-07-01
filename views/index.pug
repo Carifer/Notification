@@ -1,0 +1,53 @@
+head
+    title Web push
+body
+    h1 Probando web push
+    form(action="/", method="POST")
+        input(type="text", placeholder="Titulo", name="title")
+        input(type="text", placeholder="Mensaje", name="body")
+        button(type="submit") Enviar push
+    
+    script. 
+        window.addEventListener('load', async () => {  // -- REGISTRAR SERVICE WORKER -- //
+            if (!'serviceWorker' in navigator) {
+                console.log('Service workers are not supported.')
+                return;
+            }
+            console.log('Service working is supported')
+
+            const sw = await navigator.serviceWorker.register('/sw.js');
+            await subscribe()
+
+            console.log('ready to receive web push')
+        })
+        
+        //-- SUBSCRIBIR AL USUARIO --//
+        const subscribe = async () => {
+            const serviceWorker = await navigator.serviceWorker.ready; // 1
+            const subscription = await serviceWorker.pushManager.getSubscription();
+
+            if (!subscription) {
+                console.log('subscribing....');
+                const push = await serviceWorker.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: 'BOql6IZGYPgvdMgV-zmuv5BLfGSJN8lQVs1AC59nn8pFTkAG5IjkHXp0oMXKgxxBo5tk0TrVorZ8Db0ArSMhl18'
+                });
+                console.log('subscribed. ', push);
+
+                await sendToServer(push);
+            }
+        }
+
+        //--  ENVIO DE LA SUBSCRIPCION AL SERVIDOR --//
+
+        const sendToServer = async subData => {
+            console.log('saving to server...');
+            await fetch("/subscribe", {
+                method: "POST",
+                header: {
+                    'content-type': 'application/json'
+                },
+                body: JSON.stringify({ sub: subData})
+            });
+        }
+        
